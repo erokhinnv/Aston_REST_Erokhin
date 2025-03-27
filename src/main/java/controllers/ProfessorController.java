@@ -1,27 +1,34 @@
 package controllers;
 
 import com.google.gson.Gson;
-import dto.*;
+import dto.ProfessorCreationDto;
+import dto.ProfessorDto;
+import dto.ProfessorUpdateDto;
 import entities.Professor;
 import exceptions.ValidationException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import repositories.DepartmentRepository;
+import repositories.ProfessorRepository;
 import services.ProfessorService;
+import utils.ConnectionUtils;
 import utils.MimeTypes;
 import utils.ParseUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class ProfessorController {
-    public ProfessorController(ProfessorService service) {
-        this.service = service;
-    }
-
-    public void get(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+@WebServlet({"/professors", "/professors/*"})
+public class ProfessorController extends HttpServlet {
+    @Override
+    @SuppressWarnings("java:S1989") // Все необрабатываемые исключения являются Server Internal Error (500)
+    public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         Gson parser;
         Object body;
         String pathInfo;
@@ -55,7 +62,9 @@ public class ProfessorController {
         resp.setContentType(MimeTypes.APPLICATION_JSON);
     }
 
-    public void create(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    @Override
+    @SuppressWarnings("java:S1989") // Все необрабатываемые исключения являются Server Internal Error (500)
+    public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         Gson parser;
         ProfessorCreationDto creationDto;
         ProfessorDto professorDto;
@@ -92,7 +101,9 @@ public class ProfessorController {
         resp.setStatus(HttpServletResponse.SC_CREATED);
     }
 
-    public void update(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    @Override
+    @SuppressWarnings("java:S1989") // Все необрабатываемые исключения являются Server Internal Error (500)
+    public void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String pathInfo;
         String professorIdStr;
         int professorId;
@@ -145,7 +156,8 @@ public class ProfessorController {
         resp.setContentType(MimeTypes.APPLICATION_JSON);
     }
 
-    public void delete(HttpServletRequest req, HttpServletResponse resp) {
+    @Override
+    public void doDelete(HttpServletRequest req, HttpServletResponse resp) {
         String pathInfo;
         String professorIdStr;
         int professorId;
@@ -171,8 +183,10 @@ public class ProfessorController {
     private Collection<ProfessorDto> getProfessors() {
         Collection<Professor> professors;
         ArrayList<ProfessorDto> result;
+        ProfessorService service;
 
         result = new ArrayList<>();
+        service = createProfessorService();
         professors = service.get();
         for (Professor professor : professors) {
             ProfessorDto dto;
@@ -187,7 +201,9 @@ public class ProfessorController {
     private ProfessorDto getProfessor(int id) {
         ProfessorDto result;
         Professor professor;
+        ProfessorService service;
 
+        service = createProfessorService();
         professor = service.getById(id);
         result = toDto(professor);
 
@@ -197,6 +213,7 @@ public class ProfessorController {
     private ProfessorDto createProfessor(ProfessorCreationDto creationDto) {
         ProfessorDto result;
         Professor professor;
+        ProfessorService service;
 
         professor = new Professor();
         professor.setDepartmentId(creationDto.departmentId);
@@ -204,6 +221,7 @@ public class ProfessorController {
         professor.setPhoneNumber(creationDto.phoneNumber);
         professor.setDegree(creationDto.degree);
         professor.setBirthday(creationDto.birthday);
+        service = createProfessorService();
         service.add(professor);
         result = toDto(professor);
         return result;
@@ -213,8 +231,10 @@ public class ProfessorController {
     private ProfessorDto updateProfessor(int id, ProfessorUpdateDto updateDto) {
         Professor professor;
         ProfessorDto result;
+        ProfessorService service;
 
         result = null;
+        service = createProfessorService();
         professor = service.getById(id);
         if (professor != null) {
             if (updateDto.departmentId != null) {
@@ -241,6 +261,9 @@ public class ProfessorController {
     }
 
     private boolean deleteProfessor(int id) {
+        ProfessorService service;
+
+        service = createProfessorService();
         return service.delete(id);
     }
 
@@ -262,5 +285,21 @@ public class ProfessorController {
         return dto;
     }
 
-    private final ProfessorService service;
+    @SuppressWarnings("java:S112") // Все необрабатываемые ошибки считаем Server Internal Error (500)
+    ProfessorService createProfessorService() {
+        Connection connection;
+        ProfessorRepository repository;
+        DepartmentRepository departmentRepository;
+        ProfessorService service;
+
+        try {
+            connection = ConnectionUtils.openConnection();
+            repository = new ProfessorRepository(connection);
+            departmentRepository = new DepartmentRepository(connection);
+            service = new ProfessorService(repository, departmentRepository);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return service;
+    }
 }

@@ -71,8 +71,9 @@ class ProfessorControllerTest {
         request = Mockito.mock(HttpServletRequest.class);
         Mockito.doReturn(null).when(request).getPathInfo();
 
-        controller = new ProfessorController(service);
-        controller.get(request, response);
+        controller = Mockito.spy(ProfessorController.class);
+        Mockito.doReturn(service).when(controller).createProfessorService();
+        controller.doGet(request, response);
         responseJson = responseStringWriter.toString();
 
         Assertions.assertEquals(MimeTypes.APPLICATION_JSON, responseContentType);
@@ -105,8 +106,9 @@ class ProfessorControllerTest {
         request = Mockito.mock(HttpServletRequest.class);
         Mockito.doReturn("/200").when(request).getPathInfo();
 
-        controller = new ProfessorController(service);
-        controller.get(request, response);
+        controller = Mockito.spy(ProfessorController.class);
+        Mockito.doReturn(service).when(controller).createProfessorService();
+        controller.doGet(request, response);
         responseJson = responseStringWriter.toString();
 
         Assertions.assertEquals(MimeTypes.APPLICATION_JSON, responseContentType);
@@ -124,8 +126,9 @@ class ProfessorControllerTest {
         request = Mockito.mock(HttpServletRequest.class);
         Mockito.doReturn("/1a").when(request).getPathInfo();
 
-        controller = new ProfessorController(service);
-        controller.get(request, response);
+        controller = Mockito.spy(ProfessorController.class);
+        Mockito.doReturn(service).when(controller).createProfessorService();
+        controller.doGet(request, response);
 
         Assertions.assertEquals(HttpServletResponse.SC_BAD_REQUEST, responseStatus);
     }
@@ -142,8 +145,9 @@ class ProfessorControllerTest {
         request = Mockito.mock(HttpServletRequest.class);
         Mockito.doReturn("/1").when(request).getPathInfo();
 
-        controller = new ProfessorController(service);
-        controller.get(request, response);
+        controller = Mockito.spy(ProfessorController.class);
+        Mockito.doReturn(service).when(controller).createProfessorService();
+        controller.doGet(request, response);
 
         Assertions.assertEquals(HttpServletResponse.SC_NOT_FOUND, responseStatus);
     }
@@ -174,8 +178,9 @@ class ProfessorControllerTest {
         Mockito.doReturn(null).when(request).getPathInfo();
         Mockito.doReturn(requestReader).when(request).getReader();
 
-        controller = new ProfessorController(service);
-        controller.create(request, response);
+        controller = Mockito.spy(ProfessorController.class);
+        Mockito.doReturn(service).when(controller).createProfessorService();
+        controller.doPost(request, response);
         responseJson = responseStringWriter.toString();
 
         Assertions.assertEquals(HttpServletResponse.SC_CREATED, responseStatus);
@@ -202,8 +207,9 @@ class ProfessorControllerTest {
         Mockito.doReturn(null).when(request).getPathInfo();
         Mockito.doReturn(requestReader).when(request).getReader();
 
-        controller = new ProfessorController(service);
-        controller.create(request, response);
+        controller = Mockito.spy(ProfessorController.class);
+        Mockito.doReturn(service).when(controller).createProfessorService();
+        controller.doPost(request, response);
         responseText = responseStringWriter.toString();
 
         Assertions.assertEquals(HttpServletResponse.SC_BAD_REQUEST, responseStatus);
@@ -222,8 +228,9 @@ class ProfessorControllerTest {
         request = Mockito.mock(HttpServletRequest.class);
         Mockito.doReturn("/aaa").when(request).getPathInfo();
 
-        controller = new ProfessorController(service);
-        controller.create(request, response);
+        controller = Mockito.spy(ProfessorController.class);
+        Mockito.doReturn(service).when(controller).createProfessorService();
+        controller.doPost(request, response);
 
         Assertions.assertEquals(HttpServletResponse.SC_BAD_REQUEST, responseStatus);
     }
@@ -248,8 +255,9 @@ class ProfessorControllerTest {
         Mockito.doReturn(null).when(request).getPathInfo();
         Mockito.doReturn(requestReader).when(request).getReader();
 
-        controller = new ProfessorController(service);
-        controller.create(request, response);
+        controller = Mockito.spy(ProfessorController.class);
+        Mockito.doReturn(service).when(controller).createProfessorService();
+        controller.doPost(request, response);
         responseText = responseStringWriter.toString();
 
         Assertions.assertEquals(HttpServletResponse.SC_BAD_REQUEST, responseStatus);
@@ -282,8 +290,9 @@ class ProfessorControllerTest {
         Mockito.doReturn("/200").when(request).getPathInfo();
         Mockito.doReturn(requestReader).when(request).getReader();
 
-        controller = new ProfessorController(service);
-        controller.update(request, response);
+        controller = Mockito.spy(ProfessorController.class);
+        Mockito.doReturn(service).when(controller).createProfessorService();
+        controller.doPatch(request, response);
         responseJson = responseStringWriter.toString();
 
         Assertions.assertEquals(MimeTypes.APPLICATION_JSON, responseContentType);
@@ -309,8 +318,9 @@ class ProfessorControllerTest {
         Mockito.doReturn("/200").when(request).getPathInfo();
         Mockito.doReturn(requestReader).when(request).getReader();
 
-        controller = new ProfessorController(service);
-        controller.update(request, response);
+        controller = Mockito.spy(ProfessorController.class);
+        Mockito.doReturn(service).when(controller).createProfessorService();
+        controller.doPatch(request, response);
         responseText = responseStringWriter.toString();
 
         Assertions.assertEquals(HttpServletResponse.SC_BAD_REQUEST, responseStatus);
@@ -329,13 +339,14 @@ class ProfessorControllerTest {
 
         request = Mockito.mock(HttpServletRequest.class);
 
-        controller = new ProfessorController(service);
+        controller = Mockito.spy(ProfessorController.class);
+        Mockito.doReturn(service).when(controller).createProfessorService();
 
         pathInfos = new Object[2];
         pathInfos[0] = "/aaa";
         for (Object pathInfo : pathInfos) {
             Mockito.doReturn(pathInfo).when(request).getPathInfo();
-            controller.update(request, response);
+            controller.doPatch(request, response);
             Assertions.assertEquals(HttpServletResponse.SC_BAD_REQUEST, responseStatus);
         }
     }
@@ -361,8 +372,9 @@ class ProfessorControllerTest {
         Mockito.doReturn("/200").when(request).getPathInfo();
         Mockito.doReturn(requestReader).when(request).getReader();
 
-        controller = new ProfessorController(service);
-        controller.update(request, response);
+        controller = Mockito.spy(ProfessorController.class);
+        Mockito.doReturn(service).when(controller).createProfessorService();
+        controller.doPatch(request, response);
         responseText = responseStringWriter.toString();
 
         Assertions.assertEquals(HttpServletResponse.SC_BAD_REQUEST, responseStatus);
@@ -389,8 +401,9 @@ class ProfessorControllerTest {
         Mockito.doReturn("/200").when(request).getPathInfo();
         Mockito.doReturn(requestReader).when(request).getReader();
 
-        controller = new ProfessorController(service);
-        controller.update(request, response);
+        controller = Mockito.spy(ProfessorController.class);
+        Mockito.doReturn(service).when(controller).createProfessorService();
+        controller.doPatch(request, response);
 
         Assertions.assertEquals(HttpServletResponse.SC_NOT_FOUND, responseStatus);
     }
@@ -407,8 +420,9 @@ class ProfessorControllerTest {
         request = Mockito.mock(HttpServletRequest.class);
         Mockito.doReturn("/200").when(request).getPathInfo();
 
-        controller = new ProfessorController(service);
-        controller.delete(request, response);
+        controller = Mockito.spy(ProfessorController.class);
+        Mockito.doReturn(service).when(controller).createProfessorService();
+        controller.doDelete(request, response);
 
         Assertions.assertTrue(responseStatus < 400);
     }
@@ -424,13 +438,14 @@ class ProfessorControllerTest {
 
         request = Mockito.mock(HttpServletRequest.class);
 
-        controller = new ProfessorController(service);
+        controller = Mockito.spy(ProfessorController.class);
+        Mockito.doReturn(service).when(controller).createProfessorService();
 
         pathInfos = new Object[2];
         pathInfos[0] = "/aaa";
         for (Object pathInfo : pathInfos) {
             Mockito.doReturn(pathInfo).when(request).getPathInfo();
-            controller.delete(request, response);
+            controller.doDelete(request, response);
             Assertions.assertEquals(HttpServletResponse.SC_BAD_REQUEST, responseStatus);
         }
     }
@@ -447,8 +462,9 @@ class ProfessorControllerTest {
         request = Mockito.mock(HttpServletRequest.class);
         Mockito.doReturn("/200").when(request).getPathInfo();
 
-        controller = new ProfessorController(service);
-        controller.delete(request, response);
+        controller = Mockito.spy(ProfessorController.class);
+        Mockito.doReturn(service).when(controller).createProfessorService();
+        controller.doDelete(request, response);
 
         Assertions.assertEquals(HttpServletResponse.SC_NOT_FOUND, responseStatus);
     }

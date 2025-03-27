@@ -1,27 +1,34 @@
 package controllers;
 
 import com.google.gson.Gson;
-import dto.*;
+import dto.DepartmentCreationDto;
+import dto.DepartmentDto;
+import dto.DepartmentUpdateDto;
 import entities.Department;
 import exceptions.ValidationException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import repositories.DepartmentRepository;
+import repositories.UniversityRepository;
 import services.DepartmentService;
+import utils.ConnectionUtils;
 import utils.MimeTypes;
 import utils.ParseUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class DepartmentController {
-    public DepartmentController(DepartmentService service) {
-        this.service = service;
-    }
-
-    public void get(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+@WebServlet({"/departments", "/departments/*"})
+public class DepartmentController extends HttpServlet {
+    @Override
+    @SuppressWarnings("java:S1989") // Все необрабатываемые исключения являются Server Internal Error (500)
+    public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         Gson parser;
         Object body;
         String pathInfo;
@@ -55,7 +62,9 @@ public class DepartmentController {
         resp.setContentType(MimeTypes.APPLICATION_JSON);
     }
 
-    public void create(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    @Override
+    @SuppressWarnings("java:S1989") // Все необрабатываемые исключения являются Server Internal Error (500)
+    public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         Gson parser;
         DepartmentCreationDto creationDto;
         DepartmentDto departmentDto;
@@ -92,7 +101,9 @@ public class DepartmentController {
         resp.setStatus(HttpServletResponse.SC_CREATED);
     }
 
-     public void update(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    @Override
+    @SuppressWarnings("java:S1989") // Все необрабатываемые исключения являются Server Internal Error (500)
+    public void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String pathInfo;
         String departmentIdStr;
         int departmentId;
@@ -145,7 +156,8 @@ public class DepartmentController {
         resp.setContentType(MimeTypes.APPLICATION_JSON);
     }
 
-    public void delete(HttpServletRequest req, HttpServletResponse resp) {
+    @Override
+    public void doDelete(HttpServletRequest req, HttpServletResponse resp) {
         String pathInfo;
         String departmentIdStr;
         int departmentId;
@@ -166,13 +178,32 @@ public class DepartmentController {
         if (!deleteDepartment(departmentId)) {
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
         }
+    }
 
+    @SuppressWarnings("java:S112") // Все необрабатываемые исключения являются Server Internal Error (500)
+    DepartmentService createDepartmentService() {
+        Connection connection;
+        DepartmentRepository repository;
+        UniversityRepository universityRepository;
+        DepartmentService service;
+
+        try {
+            connection = ConnectionUtils.openConnection();
+            repository = new DepartmentRepository(connection);
+            universityRepository = new UniversityRepository(connection);
+            service = new DepartmentService(repository, universityRepository);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return service;
     }
 
     private Collection<DepartmentDto> getDepartments() {
         Collection<Department> departments;
         ArrayList<DepartmentDto> result;
+        DepartmentService service;
 
+        service = createDepartmentService();
         departments = service.get();
         result = new ArrayList<>(departments.size());
         for (Department department : departments) {
@@ -187,7 +218,9 @@ public class DepartmentController {
     private DepartmentDto getDepartment(int id) {
         DepartmentDto result;
         Department department;
+        DepartmentService service;
 
+        service = createDepartmentService();
         department = service.getById(id);
         result = toDto(department);
 
@@ -197,10 +230,12 @@ public class DepartmentController {
     private DepartmentDto createDepartment(DepartmentCreationDto creationDto) {
         DepartmentDto result;
         Department department;
+        DepartmentService service;
 
         department = new Department();
         department.setUniversityId(creationDto.universityId);
         department.setName(creationDto.name);
+        service = createDepartmentService();
         service.add(department);
         result = toDto(department);
         return result;
@@ -210,8 +245,10 @@ public class DepartmentController {
     private DepartmentDto updateDepartment(int id, DepartmentUpdateDto updateDto) {
         Department department;
         DepartmentDto result;
+        DepartmentService service;
 
         result = null;
+        service = createDepartmentService();
         department = service.getById(id);
         if (department != null) {
             if (updateDto.universityId != null) {
@@ -229,6 +266,9 @@ public class DepartmentController {
     }
 
     private boolean deleteDepartment(int id) {
+        DepartmentService service;
+
+        service = createDepartmentService();
         return service.delete(id);
     }
 
@@ -246,6 +286,4 @@ public class DepartmentController {
 
         return dto;
     }
-
-    private final DepartmentService service;
 }

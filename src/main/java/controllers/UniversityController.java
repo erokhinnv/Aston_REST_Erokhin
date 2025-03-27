@@ -6,24 +6,44 @@ import dto.UniversityDto;
 import dto.UniversityUpdateDto;
 import entities.University;
 import exceptions.ValidationException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import repositories.UniversityRepository;
 import services.UniversityService;
+import utils.ConnectionUtils;
 import utils.MimeTypes;
 import utils.ParseUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class UniversityController {
-    public UniversityController(UniversityService service) {
-        this.service = service;
-    }
+@WebServlet({"/universities", "/universities/*"})
+public class UniversityController extends HttpServlet {
 
-    public void get(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    /**
+     * @GET/universities
+     * Получить список университетов.
+     * @param req запрос на получение списка dto-университетов.
+     * @param resp ответ, в который будет отдан список dto-университетов в формате JSON.
+     * Возможные ошибки: 400 Bad Request - ошибка в запросе
+     *                   404 Not Found - запрашиваемый ресурс не найден
+     *
+     * @GET/universities/*
+     * Получить университет по идентификатору.
+     * @param req запрос на получение dto-университета.
+     * @param resp ответ, в который будет отдан dto-университет с указанным id.
+     * Возможные ошибки: 400 Bad Request - ошибка в запросе
+     *                   404 Not Found - запрашиваемый ресурс не найден
+     */
+    @Override
+    @SuppressWarnings("java:S1989") // Все необрабатываемые исключения являются Server Internal Error (500)
+    public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         Gson parser;
         Object body;
         String pathInfo;
@@ -54,9 +74,20 @@ public class UniversityController {
         respWriter = resp.getWriter();
         parser.toJson(body, respWriter);
         resp.setContentType(MimeTypes.APPLICATION_JSON);
+
     }
 
-    public void create(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    /**
+     * Добавить новый университет.
+     *
+     * @param req запрос на добавление университета. Внутри запроса в формате JSON приходит
+     *           DTO-объект, из которого будет собрана сущность и добавлена в базу данных.
+     * @param resp объект для создания ответа по операции.
+     * @throws IOException
+     */
+    @Override
+    @SuppressWarnings("java:S1989") // Все необрабатываемые исключения являются Server Internal Error (500)
+    public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         Gson parser;
         UniversityCreationDto creationDto;
         UniversityDto universityDto;
@@ -93,7 +124,9 @@ public class UniversityController {
         resp.setStatus(HttpServletResponse.SC_CREATED);
     }
 
-    public void update(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    @Override
+    @SuppressWarnings("java:S1989") // Все необрабатываемые исключения являются Server Internal Error (500)
+    public void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String pathInfo;
         String universityIdStr;
         int universityId;
@@ -146,7 +179,9 @@ public class UniversityController {
         resp.setContentType(MimeTypes.APPLICATION_JSON);
     }
 
-    public void delete(HttpServletRequest req, HttpServletResponse resp) {
+    @Override
+    @SuppressWarnings("java:S1989") // Все необрабатываемые исключения являются Server Internal Error (500)
+    public void doDelete(HttpServletRequest req, HttpServletResponse resp) {
         String pathInfo;
         String universityIdStr;
         int universityId;
@@ -169,10 +204,28 @@ public class UniversityController {
         }
     }
 
+    @SuppressWarnings("java:S112") // Все необрабатываемые ошибки считаем Server Internal Error (500)
+    UniversityService createUniversityService() {
+        Connection connection;
+        UniversityRepository repository;
+        UniversityService service;
+
+        try {
+            connection = ConnectionUtils.openConnection();
+            repository = new UniversityRepository(connection);
+            service = new UniversityService(repository);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return service;
+    }
+
     private Collection<UniversityDto> getUniversities() {
         Collection<University> universities;
         ArrayList<UniversityDto> result;
+        UniversityService service;
 
+        service = createUniversityService();
         universities = service.get();
         result = new ArrayList<>(universities.size());
         for (University university : universities) {
@@ -187,7 +240,9 @@ public class UniversityController {
     private UniversityDto getUniversity(int id) {
         University university;
         UniversityDto result;
+        UniversityService service;
 
+        service = createUniversityService();
         university = service.getById(id);
         result = toDto(university);
         return result;
@@ -196,10 +251,12 @@ public class UniversityController {
     private UniversityDto createUniversity(UniversityCreationDto creationDto) {
         University university;
         UniversityDto result;
+        UniversityService service;
 
         university = new University();
         university.setName(creationDto.name);
         university.setCity(creationDto.city);
+        service = createUniversityService();
         service.add(university);
         result = toDto(university);
         return result;
@@ -209,8 +266,10 @@ public class UniversityController {
     private UniversityDto updateUniversity(int id, UniversityUpdateDto updateDto) {
         University university;
         UniversityDto result;
+        UniversityService service;
 
         result = null;
+        service = createUniversityService();
         university = service.getById(id);
         if (university != null) {
             if (updateDto.name != null) {
@@ -228,6 +287,9 @@ public class UniversityController {
     }
 
     private boolean deleteUniversity(int id) {
+        UniversityService service;
+
+        service = createUniversityService();
         return service.delete(id);
     }
 
@@ -245,6 +307,4 @@ public class UniversityController {
 
         return dto;
     }
-
-    private final UniversityService service;
 }
