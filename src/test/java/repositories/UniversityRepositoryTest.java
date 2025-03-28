@@ -56,18 +56,18 @@ class UniversityRepositoryTest {
 
     @Test
     void testGetById() throws SQLException {
-        University university;
+        University university, dbUniversity;
         int id;
-        ArrayList<University> list;
 
         university = new University();
         university.setName("PSTU");
         university.setCity("Perm");
         repository.add(university);
         id = university.getId();
-        list = new ArrayList<>();
-        list.add(repository.getById(id));
-        Assertions.assertEquals(1, list.size());
+        dbUniversity = repository.getById(id);
+        Assertions.assertEquals(university.getId(), dbUniversity.getId());
+        Assertions.assertEquals(university.getName(), dbUniversity.getName());
+        Assertions.assertEquals(university.getCity(), dbUniversity.getCity());
     }
 
     @Test

@@ -1,6 +1,7 @@
 package services;
 
 import entities.University;
+import entities.UniversityFull;
 import exceptions.ValidationException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -39,11 +40,11 @@ class UniversityServiceTest {
 
     @Test
     void testGetById() throws SQLException {
-        University university;
+        UniversityFull university;
         UniversityRepository repository;
         UniversityService service;
 
-        university = new University();
+        university = new UniversityFull();
         university.setName("PSTU");
         university.setCity("Perm");
         university.setId(1);

@@ -1,6 +1,8 @@
 package repositories;
 
+import entities.Department;
 import entities.University;
+import entities.UniversityFull;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -54,15 +56,16 @@ public class UniversityRepository {
         return updated;
     }
 
-    public University getById(int id) throws SQLException {
-        ResultSet resultSet;
-        University university;
+    public UniversityFull getById(int id) throws SQLException {
+        UniversityFull university;
 
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT name, city FROM universities WHERE id = ?")) {
+            ResultSet resultSet;
+
             preparedStatement.setInt(1, id);
             resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
-                university = new University();
+                university = new UniversityFull();
                 university.setId(id);
                 university.setName(resultSet.getString(1));
                 university.setCity(resultSet.getString(2));
@@ -70,6 +73,28 @@ public class UniversityRepository {
                 university = null;
             }
         }
+
+        if (university != null) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT id, name FROM departments WHERE university_id = ?")) {
+                ResultSet resultSet;
+                ArrayList<Department> departments;
+
+                departments = new ArrayList<>();
+                preparedStatement.setInt(1, id);
+                resultSet = preparedStatement.executeQuery();
+                while (resultSet.next()) {
+                    Department department;
+
+                    department = new Department();
+                    department.setId(resultSet.getInt(1));
+                    department.setUniversity(university);
+                    department.setName(resultSet.getString(2));
+                    departments.add(department);
+                }
+                university.setDepartments(departments);
+            }
+        }
+
         return university;
     }
 

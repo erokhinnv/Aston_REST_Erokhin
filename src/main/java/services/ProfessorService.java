@@ -1,5 +1,6 @@
 package services;
 
+import entities.Department;
 import entities.Professor;
 import exceptions.ValidationException;
 import repositories.DepartmentRepository;
@@ -16,10 +17,11 @@ public class ProfessorService {
     }
 
     @SuppressWarnings("java:S112") // Все необрабатываемые исключения считаем Internal Server Error (500)
-    public void add(Professor professor) {
+    public Professor add(Professor professor) {
         try {
             validate(professor);
             repository.add(professor);
+            return repository.getById(professor.getId());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -63,6 +65,8 @@ public class ProfessorService {
     }
 
     private void validate(Professor professor) throws SQLException {
+        Department department;
+
         if (professor.getName() == null) {
             throw new ValidationException("Professor's name cannot be null");
         }
@@ -75,7 +79,9 @@ public class ProfessorService {
         if (professor.getBirthday() == null) {
             throw new ValidationException("Professor's birthday cannot be null");
         }
-        if (departmentRepository.getById(professor.getDepartmentId()) == null) {
+
+        department = professor.getDepartment();
+        if (department == null || departmentRepository.getById(department.getId()) == null) {
             throw new ValidationException("Department does not exist");
         }
     }

@@ -1,10 +1,11 @@
 package controllers;
 
 import com.google.gson.Gson;
-import dto.DepartmentCreationDto;
-import dto.DepartmentDto;
-import dto.DepartmentUpdateDto;
+import dto.*;
 import entities.Department;
+import entities.DepartmentFull;
+import entities.Professor;
+import entities.University;
 import exceptions.ValidationException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -67,7 +68,7 @@ public class DepartmentController extends HttpServlet {
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         Gson parser;
         DepartmentCreationDto creationDto;
-        DepartmentDto departmentDto;
+        DepartmentFullDto departmentDto;
         BufferedReader reqReader;
         PrintWriter respWriter;
 
@@ -108,7 +109,7 @@ public class DepartmentController extends HttpServlet {
         String departmentIdStr;
         int departmentId;
         DepartmentUpdateDto updateDto;
-        DepartmentDto departmentDto;
+        DepartmentFullDto departmentDto;
         Gson parser;
         BufferedReader reqReader;
         PrintWriter respWriter;
@@ -215,36 +216,40 @@ public class DepartmentController extends HttpServlet {
         return result;
     }
 
-    private DepartmentDto getDepartment(int id) {
-        DepartmentDto result;
-        Department department;
+    private DepartmentFullDto getDepartment(int id) {
+        DepartmentFullDto result;
+        DepartmentFull department;
         DepartmentService service;
 
         service = createDepartmentService();
         department = service.getById(id);
-        result = toDto(department);
+        result = toFullDto(department);
 
         return result;
     }
 
-    private DepartmentDto createDepartment(DepartmentCreationDto creationDto) {
-        DepartmentDto result;
+    private DepartmentFullDto createDepartment(DepartmentCreationDto creationDto) {
+        DepartmentFullDto result;
         Department department;
+        DepartmentFull departmentFull;
         DepartmentService service;
+        University university;
 
         department = new Department();
-        department.setUniversityId(creationDto.universityId);
+        university = new University();
+        university.setId(creationDto.universityId);
+        department.setUniversity(university);
         department.setName(creationDto.name);
         service = createDepartmentService();
-        service.add(department);
-        result = toDto(department);
+        departmentFull = service.add(department);
+        result = toFullDto(departmentFull);
         return result;
     }
 
     @java.lang.SuppressWarnings("squid:S2789") // Optional может быть null намеренно
-    private DepartmentDto updateDepartment(int id, DepartmentUpdateDto updateDto) {
-        Department department;
-        DepartmentDto result;
+    private DepartmentFullDto updateDepartment(int id, DepartmentUpdateDto updateDto) {
+        DepartmentFull department;
+        DepartmentFullDto result;
         DepartmentService service;
 
         result = null;
@@ -252,13 +257,17 @@ public class DepartmentController extends HttpServlet {
         department = service.getById(id);
         if (department != null) {
             if (updateDto.universityId != null) {
-                department.setUniversityId(updateDto.universityId.orElse(0));
+                University university;
+
+                university = new University();
+                university.setId(updateDto.universityId.orElse(0));
+                department.setUniversity(university);
             }
             if (updateDto.name != null) {
                 department.setName(updateDto.name.orElse(null));
             }
             if (service.update(department)) {
-                result = toDto(department);
+                result = toFullDto(department);
             }
         }
 
@@ -272,18 +281,55 @@ public class DepartmentController extends HttpServlet {
         return service.delete(id);
     }
 
-    private static DepartmentDto toDto(Department department) {
+    static DepartmentDto toDto(Department department) {
         DepartmentDto dto;
 
         if (department != null) {
             dto = new DepartmentDto();
-            dto.id = department.getId();
-            dto.universityId = department.getUniversityId();
-            dto.name = department.getName();
+            fillDto(dto, department);
         } else {
             dto = null;
         }
 
         return dto;
     }
+
+    private static void fillDto(DepartmentDto dto, Department department) {
+        University university;
+
+        dto.id = department.getId();
+        dto.name = department.getName();
+        university = department.getUniversity();
+        dto.university = UniversityController.toDto(university);
+    }
+
+    private static DepartmentFullDto toFullDto(DepartmentFull department) {
+        DepartmentFullDto dto;
+
+        if (department != null) {
+            Collection<Professor> professors;
+
+            dto = new DepartmentFullDto();
+            fillDto(dto, department);
+            professors = department.getProfessors();
+            if (professors != null) {
+                ArrayList<ProfessorDto> professorDtos;
+
+                professorDtos = new ArrayList<>(professors.size());
+                for (Professor professor : professors) {
+                    ProfessorDto professorDto;
+
+                    professorDto = ProfessorController.toDto(professor);
+                    professorDto.department = null;
+                    professorDtos.add(professorDto);
+                }
+                dto.professors = professorDtos;
+            }
+        } else {
+            dto = null;
+        }
+
+        return dto;
+    }
+
 }

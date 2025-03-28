@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import dto.ProfessorCreationDto;
 import dto.ProfessorDto;
 import dto.ProfessorUpdateDto;
+import entities.Department;
 import entities.Professor;
 import exceptions.ValidationException;
 import jakarta.servlet.annotation.WebServlet;
@@ -214,15 +215,18 @@ public class ProfessorController extends HttpServlet {
         ProfessorDto result;
         Professor professor;
         ProfessorService service;
+        Department department;
 
         professor = new Professor();
-        professor.setDepartmentId(creationDto.departmentId);
+        department = new Department();
+        department.setId(creationDto.departmentId);
+        professor.setDepartment(department);
         professor.setName(creationDto.name);
         professor.setPhoneNumber(creationDto.phoneNumber);
         professor.setDegree(creationDto.degree);
         professor.setBirthday(creationDto.birthday);
         service = createProfessorService();
-        service.add(professor);
+        professor = service.add(professor);
         result = toDto(professor);
         return result;
     }
@@ -238,7 +242,11 @@ public class ProfessorController extends HttpServlet {
         professor = service.getById(id);
         if (professor != null) {
             if (updateDto.departmentId != null) {
-                professor.setDepartmentId(updateDto.departmentId.orElse(0));
+                Department department;
+
+                department = new Department();
+                department.setId(updateDto.departmentId.orElse(0));
+                professor.setDepartment(department);
             }
             if (updateDto.name != null) {
                 professor.setName(updateDto.name.orElse(null));
@@ -267,13 +275,16 @@ public class ProfessorController extends HttpServlet {
         return service.delete(id);
     }
 
-    private static ProfessorDto toDto(Professor professor) {
+    static ProfessorDto toDto(Professor professor) {
         ProfessorDto dto;
 
         if (professor != null) {
+            Department department;
+
             dto = new ProfessorDto();
             dto.id = professor.getId();
-            dto.departmentId = professor.getDepartmentId();
+            department = professor.getDepartment();
+            dto.department = DepartmentController.toDto(department);
             dto.name = professor.getName();
             dto.phoneNumber = professor.getPhoneNumber();
             dto.degree = professor.getDegree();

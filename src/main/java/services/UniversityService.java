@@ -1,6 +1,7 @@
 package services;
 
 import entities.University;
+import entities.UniversityFull;
 import exceptions.ValidationException;
 import repositories.UniversityRepository;
 
@@ -14,10 +15,11 @@ public class UniversityService {
     }
 
     @SuppressWarnings("java:S112") // Все необрабатываемые исключения считаем Internal Server Error (500)
-    public void add(University university) {
+    public UniversityFull add(University university) {
         validate(university);
         try {
             repository.add(university);
+            return repository.getById(university.getId());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -43,7 +45,7 @@ public class UniversityService {
     }
 
     @SuppressWarnings("java:S112") // Все необрабатываемые исключения считаем Internal Server Error (500)
-    public University getById(int id) {
+    public UniversityFull getById(int id) {
         try {
             return repository.getById(id);
         } catch (SQLException e) {

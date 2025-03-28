@@ -44,18 +44,18 @@ public class Professor {
         this.id = id;
     }
 
-    public int getDepartmentId() {
-        return departmentId;
+    public Department getDepartment() {
+        return department;
     }
 
-    public void setDepartmentId(int departmentId) {
-        this.departmentId = departmentId;
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 
     private int id;
-    private int departmentId;
     private String name;
     private String phoneNumber;
     private String degree;
     private Date birthday;
+    private Department department;
 }

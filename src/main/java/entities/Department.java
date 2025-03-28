@@ -18,15 +18,15 @@ public class Department {
         this.name = name;
     }
 
-    public int getUniversityId() {
-        return universityId;
+    public University getUniversity() {
+        return university;
     }
 
-    public void setUniversityId(int universityId) {
-        this.universityId = universityId;
+    public void setUniversity(University university) {
+        this.university = university;
     }
 
     private int id;
-    private int universityId;
+    private University university;
     private String name;
 }

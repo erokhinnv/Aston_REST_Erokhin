@@ -1,6 +1,9 @@
 package controllers;
 
+import entities.Department;
+import entities.DepartmentFull;
 import entities.University;
+import entities.UniversityFull;
 import exceptions.ValidationException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -73,13 +76,27 @@ class UniversityControllerTest {
         UniversityService service;
         UniversityController controller;
         HttpServletRequest request;
-        University university;
+        UniversityFull university;
+        Department first, second;
+        ArrayList<Department> departments;
         String responseJson;
 
-        university = new University();
+        departments = new ArrayList<>();
+        university = new UniversityFull();
         university.setId(1);
         university.setName("PSTU");
         university.setCity("PERM");
+        first = new Department();
+        first.setId(1);
+        first.setName("ITAS");
+        first.setUniversity(university);
+        departments.add(first);
+        second = new Department();
+        second.setId(2);
+        second.setName("AT");
+        second.setUniversity(university);
+        departments.add(second);
+        university.setDepartments(departments);
 
         service = Mockito.mock(UniversityService.class);
         Mockito.doReturn(university).when(service).getById(university.getId());
@@ -93,7 +110,7 @@ class UniversityControllerTest {
         responseJson = responseStringWriter.toString();
 
         Assertions.assertEquals(MimeTypes.APPLICATION_JSON, responseContentType);
-        Assertions.assertEquals("{\"id\":1,\"name\":\"PSTU\",\"city\":\"PERM\"}", responseJson);
+        Assertions.assertEquals("{\"departments\":[{\"id\":1,\"name\":\"ITAS\"},{\"id\":2,\"name\":\"AT\"}],\"id\":1,\"name\":\"PSTU\",\"city\":\"PERM\"}", responseJson);
     }
 
     @Test
@@ -146,10 +163,15 @@ class UniversityControllerTest {
         service = Mockito.mock(UniversityService.class);
         Mockito.doAnswer(invocation -> {
             University arg;
+            UniversityFull universityFull;
 
+            universityFull = new UniversityFull();
             arg = invocation.getArgument(0);
             arg.setId(10);
-            return null;
+            universityFull.setId(arg.getId());
+            universityFull.setName(arg.getName());
+            universityFull.setCity(arg.getCity());
+            return universityFull;
         }).when(service).add(Mockito.any(University.class));
 
         requestJson = "{\"name\":\"PSTU\",\"city\":\"PERM\"}";
@@ -250,15 +272,16 @@ class UniversityControllerTest {
     void testUpdate() throws IOException {
         UniversityService service;
         UniversityController controller;
-        University university;
+        UniversityFull university;
         HttpServletRequest request;
         String requestJson;
         StringReader requestStringReader;
         BufferedReader requestReader;
         String responseJson;
 
-        university = new University();
+        university = new UniversityFull();
         university.setId(12);
+
 
         service = Mockito.mock(UniversityService.class);
         Mockito.doReturn(university).when(service).getById(university.getId());
@@ -343,7 +366,7 @@ class UniversityControllerTest {
         String responseText;
 
         service = Mockito.mock(UniversityService.class);
-        Mockito.doReturn(new University()).when(service).getById(12);
+        Mockito.doReturn(new UniversityFull()).when(service).getById(12);
         Mockito.doThrow(new ValidationException("Test error")).when(service).update(Mockito.any(University.class));
 
         requestJson = "{}";

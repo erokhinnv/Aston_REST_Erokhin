@@ -1,7 +1,9 @@
 package services;
 
 import entities.Department;
+import entities.DepartmentFull;
 import entities.University;
+import entities.UniversityFull;
 import exceptions.ValidationException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -45,14 +47,19 @@ class DepartmentServiceTest {
 
     @Test
     void testGetById() throws SQLException {
-        Department department;
+        DepartmentFull department;
+        UniversityFull university;
         UniversityRepository universityRepository;
         DepartmentRepository repository;
         DepartmentService service;
 
-        department = new Department();
+        university = new UniversityFull();
+        university.setId(1);
+        university.setName("PSTU");
+        university.setCity("Perm");
+        department = new DepartmentFull();
         department.setName("PSTU");
-        department.setUniversityId(1);
+        department.setUniversity(university);
         department.setId(1);
         universityRepository = Mockito.mock(UniversityRepository.class);
         repository = Mockito.mock(DepartmentRepository.class);
@@ -82,13 +89,18 @@ class DepartmentServiceTest {
         UniversityRepository universityRepository;
         DepartmentRepository repository;
         DepartmentService service;
-        Department department;
+        DepartmentFull department;
+        UniversityFull university;
 
-        department = new Department();
-        department.setName("PSTU");
-        department.setUniversityId(5);
+        university = new UniversityFull();
+        university.setId(5);
+        university.setName("PSTU");
+        university.setCity("Perm");
+        department = new DepartmentFull();
+        department.setName("ITAS");
+        department.setUniversity(university);
         universityRepository = Mockito.mock(UniversityRepository.class);
-        Mockito.doReturn(new University()).when(universityRepository).getById(department.getUniversityId());
+        Mockito.doReturn(university).when(universityRepository).getById(department.getUniversity().getId());
         repository = Mockito.mock(DepartmentRepository.class);
         Mockito.doAnswer(invocation -> {
             Department departmentArg;
@@ -107,9 +119,14 @@ class DepartmentServiceTest {
         UniversityRepository universityRepository;
         DepartmentRepository repository;
         DepartmentService service;
-        Department department;
+        DepartmentFull department;
+        UniversityFull university;
 
-        department = new Department();
+        university = new UniversityFull();
+        university.setId(2);
+        university.setName("PSU");
+        university.setCity("Perm");
+        department = new DepartmentFull();
         department.setName("ITAS");
         universityRepository = Mockito.mock(UniversityRepository.class);
         repository = Mockito.mock(DepartmentRepository.class);
@@ -118,8 +135,8 @@ class DepartmentServiceTest {
             service.add(department);
         });
         department.setName(null);
-        department.setUniversityId(2);
-        Mockito.doReturn(new University()).when(universityRepository).getById(department.getUniversityId());
+        department.setUniversity(university);
+        Mockito.doReturn(university).when(universityRepository).getById(department.getUniversity().getId());
         Assertions.assertThrows(ValidationException.class, () -> {
             service.add(department);
         });
@@ -130,7 +147,8 @@ class DepartmentServiceTest {
         UniversityRepository universityRepository;
         DepartmentRepository repository;
         DepartmentService service;
-        Department department;
+        DepartmentFull department;
+        UniversityFull university;
 
         universityRepository = Mockito.mock(UniversityRepository.class);
         repository = Mockito.mock(DepartmentRepository.class);
@@ -138,10 +156,14 @@ class DepartmentServiceTest {
         Assertions.assertThrows(RuntimeException.class, () -> {
             service.add(null);
         });
-        department = new Department();
-        department.setUniversityId(5);
-        department.setName("PSTU");
-        Mockito.doReturn(new University()).when(universityRepository).getById(department.getUniversityId());
+        university = new UniversityFull();
+        university.setId(1);
+        university.setName("PSTU");
+        university.setCity("Perm");
+        department = new DepartmentFull();
+        department.setUniversity(university);
+        department.setName("ITAS");
+        Mockito.doReturn(university).when(universityRepository).getById(department.getUniversity().getId());
         Mockito.doThrow(SQLException.class).when(repository).add(department);
         Assertions.assertThrows(RuntimeException.class, () -> {
             service.add(department);
@@ -153,14 +175,19 @@ class DepartmentServiceTest {
         UniversityRepository universityRepository;
         DepartmentRepository repository;
         DepartmentService service;
-        Department department;
+        DepartmentFull department;
+        UniversityFull university;
 
-        department = new Department();
+        university = new UniversityFull();
+        university.setId(1);
+        university.setName("PSTU");
+        university.setCity("Perm");
+        department = new DepartmentFull();
         department.setName("ITAS");
-        department.setUniversityId(5);
+        department.setUniversity(university);
         universityRepository = Mockito.mock(UniversityRepository.class);
         repository = Mockito.mock(DepartmentRepository.class);
-        Mockito.doReturn(new University()).when(universityRepository).getById(department.getUniversityId());
+        Mockito.doReturn(university).when(universityRepository).getById(department.getUniversity().getId());
         Mockito.doAnswer(invocation -> {
             Department departmentArg;
 
@@ -179,10 +206,15 @@ class DepartmentServiceTest {
         UniversityRepository universityRepository;
         DepartmentRepository repository;
         DepartmentService service;
-        Department department;
+        DepartmentFull department;
+        UniversityFull university;
 
-        department = new Department();
-        department.setName("ITAS");
+        university = new UniversityFull();
+        university.setId(2);
+        university.setName("PSU");
+        university.setCity("Perm");
+        department = new DepartmentFull();
+        department.setName("IT");
         universityRepository = Mockito.mock(UniversityRepository.class);
         repository = Mockito.mock(DepartmentRepository.class);
         service = new DepartmentService(repository, universityRepository);
@@ -190,8 +222,8 @@ class DepartmentServiceTest {
             service.update(department);
         });
         department.setName(null);
-        department.setUniversityId(2);
-        Mockito.doReturn(new University()).when(universityRepository).getById(department.getUniversityId());
+        department.setUniversity(university);
+        Mockito.doReturn(university).when(universityRepository).getById(department.getUniversity().getId());
         Assertions.assertThrows(ValidationException.class, () -> {
             service.update(department);
         });
@@ -203,6 +235,7 @@ class DepartmentServiceTest {
         DepartmentRepository repository;
         DepartmentService service;
         Department department;
+        UniversityFull university;
 
         universityRepository = Mockito.mock(UniversityRepository.class);
         repository = Mockito.mock(DepartmentRepository.class);
@@ -210,10 +243,14 @@ class DepartmentServiceTest {
         Assertions.assertThrows(RuntimeException.class, () -> {
             service.update(null);
         });
+        university = new UniversityFull();
+        university.setId(1);
+        university.setName("PSTU");
+        university.setCity("Perm");
         department = new Department();
-        department.setUniversityId(5);
-        department.setName("PSTU");
-        Mockito.doReturn(new University()).when(universityRepository).getById(department.getUniversityId());
+        department.setUniversity(university);
+        department.setName("ITAS");
+        Mockito.doReturn(university).when(universityRepository).getById(department.getUniversity().getId());
         Mockito.doThrow(SQLException.class).when(repository).update(department);
         Assertions.assertThrows(RuntimeException.class, () -> {
             service.update(department);

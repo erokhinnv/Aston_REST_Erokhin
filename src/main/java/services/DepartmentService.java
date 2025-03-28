@@ -1,6 +1,8 @@
 package services;
 
 import entities.Department;
+import entities.DepartmentFull;
+import entities.University;
 import exceptions.ValidationException;
 import repositories.DepartmentRepository;
 import repositories.UniversityRepository;
@@ -16,10 +18,11 @@ public class DepartmentService {
     }
 
     @SuppressWarnings("java:S112") // Все необрабатываемые исключения считаем Internal Server Error (500)
-    public void add(Department department) {
+    public DepartmentFull add(Department department) {
         try {
             validate(department);
             repository.add(department);
+            return repository.getById(department.getId());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -45,7 +48,7 @@ public class DepartmentService {
     }
 
     @SuppressWarnings("java:S112") // Все необрабатываемые исключения считаем Internal Server Error (500)
-    public Department getById(int id) {
+    public DepartmentFull getById(int id) {
         try {
             return repository.getById(id);
         } catch (SQLException e) {
@@ -63,10 +66,14 @@ public class DepartmentService {
     }
 
     private void validate(Department department) throws SQLException {
+        University university;
+
         if (department.getName() == null) {
             throw new ValidationException("Name of department cannot be null");
         }
-        if (universityRepository.getById(department.getUniversityId()) == null) {
+
+        university = department.getUniversity();
+        if (university == null || universityRepository.getById(university.getId()) == null) {
             throw new ValidationException("University of department does not exist");
         }
     }

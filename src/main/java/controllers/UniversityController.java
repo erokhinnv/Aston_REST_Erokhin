@@ -1,10 +1,10 @@
 package controllers;
 
 import com.google.gson.Gson;
-import dto.UniversityCreationDto;
-import dto.UniversityDto;
-import dto.UniversityUpdateDto;
+import dto.*;
+import entities.Department;
 import entities.University;
+import entities.UniversityFull;
 import exceptions.ValidationException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -90,7 +90,7 @@ public class UniversityController extends HttpServlet {
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         Gson parser;
         UniversityCreationDto creationDto;
-        UniversityDto universityDto;
+        UniversityFullDto universityDto;
         BufferedReader reqReader;
         PrintWriter respWriter;
 
@@ -131,7 +131,7 @@ public class UniversityController extends HttpServlet {
         String universityIdStr;
         int universityId;
         UniversityUpdateDto updateDto;
-        UniversityDto universityDto;
+        UniversityFullDto universityDto;
         Gson parser;
         BufferedReader reqReader;
         PrintWriter respWriter;
@@ -237,35 +237,36 @@ public class UniversityController extends HttpServlet {
         return result;
     }
 
-    private UniversityDto getUniversity(int id) {
-        University university;
-        UniversityDto result;
+    private UniversityFullDto getUniversity(int id) {
+        UniversityFull university;
+        UniversityFullDto result;
         UniversityService service;
 
         service = createUniversityService();
         university = service.getById(id);
-        result = toDto(university);
+        result = toFullDto(university);
         return result;
     }
 
-    private UniversityDto createUniversity(UniversityCreationDto creationDto) {
+    private UniversityFullDto createUniversity(UniversityCreationDto creationDto) {
         University university;
-        UniversityDto result;
+        UniversityFull universityFull;
+        UniversityFullDto result;
         UniversityService service;
 
         university = new University();
         university.setName(creationDto.name);
         university.setCity(creationDto.city);
         service = createUniversityService();
-        service.add(university);
-        result = toDto(university);
+        universityFull = service.add(university);
+        result = toFullDto(universityFull);
         return result;
     }
 
     @java.lang.SuppressWarnings("squid:S2789") // Optional может быть null намеренно
-    private UniversityDto updateUniversity(int id, UniversityUpdateDto updateDto) {
-        University university;
-        UniversityDto result;
+    private UniversityFullDto updateUniversity(int id, UniversityUpdateDto updateDto) {
+        UniversityFull university;
+        UniversityFullDto result;
         UniversityService service;
 
         result = null;
@@ -279,7 +280,7 @@ public class UniversityController extends HttpServlet {
                 university.setCity(updateDto.city.orElse(null));
             }
             if (service.update(university)) {
-                result = toDto(university);
+                result = toFullDto(university);
             }
         }
 
@@ -293,18 +294,50 @@ public class UniversityController extends HttpServlet {
         return service.delete(id);
     }
 
-    private static UniversityDto toDto(University university) {
+    static UniversityDto toDto(University university) {
         UniversityDto dto;
 
         if (university != null) {
             dto = new UniversityDto();
-            dto.id = university.getId();
-            dto.name = university.getName();
-            dto.city = university.getCity();
+            fillDto(dto, university);
         } else {
             dto = null;
         }
 
         return dto;
+    }
+
+    private static void fillDto(UniversityDto dto, University university) {
+        dto.id = university.getId();
+        dto.name = university.getName();
+        dto.city = university.getCity();
+    }
+
+    private static UniversityFullDto toFullDto(UniversityFull universityFull) {
+        UniversityFullDto fullDto;
+
+        if (universityFull != null) {
+            Collection<Department> departments;
+
+            fullDto = new UniversityFullDto();
+            fillDto(fullDto, universityFull);
+            departments = universityFull.getDepartments();
+            if (departments != null) {
+                ArrayList<DepartmentDto> departmentDtos;
+
+                departmentDtos = new ArrayList<>(departments.size());
+                for (Department department : departments) {
+                    DepartmentDto departmentDto;
+
+                    departmentDto = DepartmentController.toDto(department);
+                    departmentDto.university = null;
+                    departmentDtos.add(departmentDto);
+                }
+                fullDto.departments = departmentDtos;
+            }
+        } else {
+            fullDto = null;
+        }
+        return fullDto;
     }
 }

@@ -1,6 +1,8 @@
 package controllers;
 
+import entities.Department;
 import entities.Professor;
+import entities.University;
 import exceptions.ValidationException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -39,10 +41,20 @@ class ProfessorControllerTest {
         HttpServletRequest request;
         ArrayList<Professor> professors;
         Professor professor;
+        Department department, secondDepartment;
+        University university;
         String responseJson;
         Date birthdate;
 
         professors = new ArrayList<>(2);
+        university = new University();
+        university.setId(1);
+        university.setName("PSTU");
+        university.setCity("Perm");
+        department = new Department();
+        department.setId(1);
+        department.setName("MEHMAT");
+        department.setUniversity(university);
         professor = new Professor();
         professor.setId(100);
         professor.setName("Ivan");
@@ -51,7 +63,7 @@ class ProfessorControllerTest {
         birthdate = new Date();
         birthdate.setTime(0);
         professor.setBirthday(birthdate);
-        professor.setDepartmentId(15);
+        professor.setDepartment(department);
         professors.add(professor);
 
         professor = new Professor();
@@ -62,7 +74,11 @@ class ProfessorControllerTest {
         birthdate = new Date();
         birthdate.setTime(169344000);
         professor.setBirthday(birthdate);
-        professor.setDepartmentId(24);
+        secondDepartment = new Department();
+        secondDepartment.setId(2);
+        secondDepartment.setName("ITAS");
+        secondDepartment.setUniversity(university);
+        professor.setDepartment(secondDepartment);
         professors.add(professor);
 
         service = Mockito.mock(ProfessorService.class);
@@ -77,8 +93,7 @@ class ProfessorControllerTest {
         responseJson = responseStringWriter.toString();
 
         Assertions.assertEquals(MimeTypes.APPLICATION_JSON, responseContentType);
-        Assertions.assertEquals("[{\"id\":100,\"department_id\":15,\"name\":\"Ivan\",\"phone_number\":\"+79998884334\",\"degree\":\"PhD in Computer Science\",\"birthday\":\"1970-01-01\"}"
-                + ",{\"id\":200,\"department_id\":24,\"name\":\"Petr\",\"phone_number\":\"+79824863265\",\"degree\":\"PhD in Technical Science\",\"birthday\":\"1970-01-03\"}]", responseJson);
+        Assertions.assertEquals("[{\"id\":100,\"department\":{\"id\":1,\"university\":{\"id\":1,\"name\":\"PSTU\",\"city\":\"Perm\"},\"name\":\"MEHMAT\"},\"name\":\"Ivan\",\"phone_number\":\"+79998884334\",\"degree\":\"PhD in Computer Science\",\"birthday\":\"1970-01-01\"},{\"id\":200,\"department\":{\"id\":2,\"university\":{\"id\":1,\"name\":\"PSTU\",\"city\":\"Perm\"},\"name\":\"ITAS\"},\"name\":\"Petr\",\"phone_number\":\"+79824863265\",\"degree\":\"PhD in Technical Science\",\"birthday\":\"1970-01-03\"}]", responseJson);
     }
 
     @Test
@@ -87,6 +102,8 @@ class ProfessorControllerTest {
         ProfessorController controller;
         HttpServletRequest request;
         Professor professor;
+        University university;
+        Department department;
         String responseJson;
         Date birthdate;
 
@@ -98,7 +115,15 @@ class ProfessorControllerTest {
         birthdate = new Date();
         birthdate.setTime(169344000);
         professor.setBirthday(birthdate);
-        professor.setDepartmentId(24);
+        university = new University();
+        university.setId(1);
+        university.setName("PSTU");
+        university.setCity("Perm");
+        department = new Department();
+        department.setId(1);
+        department.setName("MEHMAT");
+        department.setUniversity(university);
+        professor.setDepartment(department);
 
         service = Mockito.mock(ProfessorService.class);
         Mockito.doReturn(professor).when(service).getById(professor.getId());
@@ -112,7 +137,7 @@ class ProfessorControllerTest {
         responseJson = responseStringWriter.toString();
 
         Assertions.assertEquals(MimeTypes.APPLICATION_JSON, responseContentType);
-        Assertions.assertEquals("{\"id\":200,\"department_id\":24,\"name\":\"Petr\",\"phone_number\":\"+79824863265\",\"degree\":\"PhD in Technical Science\",\"birthday\":\"1970-01-03\"}", responseJson);
+        Assertions.assertEquals("{\"id\":200,\"department\":{\"id\":1,\"university\":{\"id\":1,\"name\":\"PSTU\",\"city\":\"Perm\"},\"name\":\"MEHMAT\"},\"name\":\"Petr\",\"phone_number\":\"+79824863265\",\"degree\":\"PhD in Technical Science\",\"birthday\":\"1970-01-03\"}", responseJson);
     }
 
     @Test
@@ -168,7 +193,7 @@ class ProfessorControllerTest {
 
             arg = invocation.getArgument(0);
             arg.setId(200);
-            return null;
+            return arg;
         }).when(service).add(Mockito.any(Professor.class));
 
         requestJson = "{\"department_id\":24,\"name\":\"Petr\",\"phone_number\":\"+79824863265\",\"degree\":\"PhD in Technical Science\",\"birthday\":\"1970-01-03\"}";
@@ -185,7 +210,7 @@ class ProfessorControllerTest {
 
         Assertions.assertEquals(HttpServletResponse.SC_CREATED, responseStatus);
         Assertions.assertEquals(MimeTypes.APPLICATION_JSON, responseContentType);
-        Assertions.assertEquals("{\"id\":200,\"department_id\":24,\"name\":\"Petr\",\"phone_number\":\"+79824863265\",\"degree\":\"PhD in Technical Science\",\"birthday\":\"1970-01-03\"}", responseJson);
+        Assertions.assertEquals("{\"id\":200,\"department\":{\"id\":24},\"name\":\"Petr\",\"phone_number\":\"+79824863265\",\"degree\":\"PhD in Technical Science\",\"birthday\":\"1970-01-03\"}", responseJson);
     }
 
     @Test
@@ -296,7 +321,7 @@ class ProfessorControllerTest {
         responseJson = responseStringWriter.toString();
 
         Assertions.assertEquals(MimeTypes.APPLICATION_JSON, responseContentType);
-        Assertions.assertEquals("{\"id\":200,\"department_id\":30,\"name\":\"Petr\",\"phone_number\":\"+79824863265\",\"degree\":\"PhD in Technical Science\",\"birthday\":\"1970-01-03\"}", responseJson);
+        Assertions.assertEquals("{\"id\":200,\"department\":{\"id\":30},\"name\":\"Petr\",\"phone_number\":\"+79824863265\",\"degree\":\"PhD in Technical Science\",\"birthday\":\"1970-01-03\"}", responseJson);
     }
 
     @Test

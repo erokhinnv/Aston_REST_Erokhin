@@ -41,7 +41,7 @@ class ProfessorRepositoryTest {
             universityRepository.add(university);
             department = new Department();
             department.setName("ITAS");
-            department.setUniversityId(university.getId());
+            department.setUniversity(university);
             departmentRepository.add(department);
             connection.setAutoCommit(false);
         } catch (Exception e) {
@@ -63,7 +63,7 @@ class ProfessorRepositoryTest {
         firstBirthdate = new Date();
         firstBirthdate.setTime(0);
         first.setBirthday(firstBirthdate);
-        first.setDepartmentId(department.getId());
+        first.setDepartment(department);
 
         second = new Professor();
         second.setName("Petr");
@@ -72,7 +72,7 @@ class ProfessorRepositoryTest {
         secondBirthdate = new Date();
         secondBirthdate.setTime(169344000);
         second.setBirthday(secondBirthdate);
-        second.setDepartmentId(department.getId());
+        second.setDepartment(department);
         repository.add(first);
         repository.add(second);
         professors = repository.get();
@@ -81,10 +81,9 @@ class ProfessorRepositoryTest {
 
     @Test
     void testGetById() throws SQLException {
-        Professor professor;
+        Professor professor, dbProfessor;
         Date birthdate;
         int id;
-        ArrayList<Professor> list;
 
         professor = new Professor();
         professor.setName("Ivan");
@@ -93,12 +92,15 @@ class ProfessorRepositoryTest {
         birthdate = new Date();
         birthdate.setTime(0);
         professor.setBirthday(birthdate);
-        professor.setDepartmentId(department.getId());
+        professor.setDepartment(department);
         repository.add(professor);
-        list = new ArrayList<>();
         id = professor.getId();
-        list.add(repository.getById(id));
-        Assertions.assertEquals(1, list.size());
+        dbProfessor = repository.getById(id);
+        Assertions.assertEquals(professor.getId(), dbProfessor.getId());
+        Assertions.assertEquals(professor.getDepartment().getId(), dbProfessor.getDepartment().getId());
+        Assertions.assertEquals(professor.getName(), dbProfessor.getName());
+        Assertions.assertEquals(professor.getPhoneNumber(), dbProfessor.getPhoneNumber());
+        Assertions.assertEquals(professor.getDegree(), dbProfessor.getDegree());
     }
 
     @Test
@@ -114,7 +116,7 @@ class ProfessorRepositoryTest {
         birthdate = new Date();
         birthdate.setTime(0);
         professor.setBirthday(birthdate);
-        professor.setDepartmentId(department.getId());
+        professor.setDepartment(department);
 
         repository.add(professor);
         professors = repository.get();
@@ -134,7 +136,7 @@ class ProfessorRepositoryTest {
         birthdate = new Date();
         birthdate.setTime(0);
         professor.setBirthday(birthdate);
-        professor.setDepartmentId(department.getId());
+        professor.setDepartment(department);
 
         repository.add(professor);
         professor.setName("Alex");
@@ -155,7 +157,7 @@ class ProfessorRepositoryTest {
         birthdate = new Date();
         birthdate.setTime(0);
         professor.setBirthday(birthdate);
-        professor.setDepartmentId(department.getId());
+        professor.setDepartment(department);
 
         repository.add(professor);
         deleted = repository.delete(professor.getId());

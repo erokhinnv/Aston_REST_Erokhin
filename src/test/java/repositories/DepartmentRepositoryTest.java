@@ -54,10 +54,10 @@ class DepartmentRepositoryTest {
 
         first = new Department();
         first.setName("ITAS");
-        first.setUniversityId(university.getId());
+        first.setUniversity(university);
         second = new Department();
         second.setName("AT");
-        second.setUniversityId(university.getId());
+        second.setUniversity(university);
         repository.add(first);
         repository.add(second);
         departments = repository.get();
@@ -66,18 +66,18 @@ class DepartmentRepositoryTest {
 
     @Test
     void testGetById() throws SQLException {
-        Department department;
+        Department department, dbDepartment;
         int id;
-        ArrayList<Department> list;
 
         department = new Department();
-        department.setUniversityId(university.getId());
+        department.setUniversity(university);
         department.setName("ITAS");
         repository.add(department);
-        list = new ArrayList<>();
         id = department.getId();
-        list.add(repository.getById(id));
-        Assertions.assertEquals(1, list.size());
+        dbDepartment = repository.getById(id);
+        Assertions.assertEquals(department.getId(), dbDepartment.getId());
+        Assertions.assertEquals(department.getName(), dbDepartment.getName());
+        Assertions.assertEquals(department.getUniversity().getId(), dbDepartment.getUniversity().getId());
     }
 
     @Test
@@ -86,7 +86,7 @@ class DepartmentRepositoryTest {
         Collection<Department> departments;
         department = new Department();
         department.setName("ITAS");
-        department.setUniversityId(university.getId());
+        department.setUniversity(university);
         repository.add(department);
         departments = repository.get();
         Assertions.assertFalse(departments.isEmpty());
@@ -99,7 +99,7 @@ class DepartmentRepositoryTest {
 
         department = new Department();
         department.setName("ITAS");
-        department.setUniversityId(university.getId());
+        department.setUniversity(university);
         repository.add(department);
         department.setName("AT");
         updated = repository.update(department);
@@ -113,7 +113,7 @@ class DepartmentRepositoryTest {
 
         department = new Department();
         department.setName("ITAS");
-        department.setUniversityId(university.getId());
+        department.setUniversity(university);
         repository.add(department);
         deleted = repository.delete(department.getId());
         Assertions.assertTrue(deleted);
