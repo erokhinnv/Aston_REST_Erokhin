@@ -11,10 +11,7 @@ import java.util.HashMap;
 
 public class ProfessorRepository extends Repository {
     public ProfessorRepository() throws SQLException {
-        Connection connection;
-
-        connection = openConnection();
-        RepositoryUtils.createTablesIfNotExist(connection);
+        super();
     }
 
     public void add(Professor professor) throws SQLException {

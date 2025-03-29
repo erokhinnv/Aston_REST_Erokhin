@@ -9,10 +9,7 @@ import java.util.HashMap;
 
 public class DepartmentRepository extends Repository {
     public DepartmentRepository() throws SQLException {
-        Connection connection;
-
-        connection = openConnection();
-        RepositoryUtils.createTablesIfNotExist(connection);
+        super();
     }
 
     public void add(Department department) throws SQLException {

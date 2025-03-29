@@ -8,13 +8,11 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class UniversityRepository extends Repository{
+public class UniversityRepository extends Repository {
+
 
     public UniversityRepository() throws SQLException {
-        Connection connection;
-
-        connection = openConnection();
-        RepositoryUtils.createTablesIfNotExist(connection);
+        super();
     }
 
     public void add(University university) throws SQLException {
