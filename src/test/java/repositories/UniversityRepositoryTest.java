@@ -3,11 +3,12 @@ package repositories;
 import entities.University;
 import org.junit.jupiter.api.*;
 import org.testcontainers.containers.PostgreSQLContainer;
-import utils.ConnectionUtils;
+import utils.DatabaseSettings;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.sql.Statement;
 import java.util.Collection;
 
 class UniversityRepositoryTest {
@@ -24,16 +25,23 @@ class UniversityRepositoryTest {
     @BeforeEach
     void setUp() {
         try {
-            Connection connection = ConnectionUtils.openConnection(
-                    postgres.getJdbcUrl(),
-                    postgres.getUsername(),
-                    postgres.getPassword()
-            );
-            repository = new UniversityRepository(connection);
-            connection.setAutoCommit(false);
+            DatabaseSettings.URL = postgres.getJdbcUrl();
+            DatabaseSettings.USERNAME = postgres.getUsername();
+            DatabaseSettings.PASSWORD = postgres.getPassword();
+            repository = new UniversityRepository();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @AfterEach
+    void cleanUp() throws SQLException {
+        Connection connection;
+        Statement statement;
+
+        connection = DriverManager.getConnection(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
+        statement = connection.createStatement();
+        statement.execute("DELETE FROM universities");
     }
 
     @Test

@@ -5,11 +5,12 @@ import entities.Professor;
 import entities.University;
 import org.junit.jupiter.api.*;
 import org.testcontainers.containers.PostgreSQLContainer;
-import utils.ConnectionUtils;
+import utils.DatabaseSettings;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.sql.Statement;
 import java.util.Collection;
 import java.util.Date;
 
@@ -27,14 +28,12 @@ class ProfessorRepositoryTest {
     @BeforeEach
     void setUp() {
         try {
-            Connection connection = ConnectionUtils.openConnection(
-                    postgres.getJdbcUrl(),
-                    postgres.getUsername(),
-                    postgres.getPassword()
-            );
-            universityRepository = new UniversityRepository(connection);
-            departmentRepository = new DepartmentRepository(connection);
-            repository = new ProfessorRepository(connection);
+            DatabaseSettings.URL = postgres.getJdbcUrl();
+            DatabaseSettings.USERNAME = postgres.getUsername();
+            DatabaseSettings.PASSWORD = postgres.getPassword();
+            universityRepository = new UniversityRepository();
+            departmentRepository = new DepartmentRepository();
+            repository = new ProfessorRepository();
             university = new University();
             university.setName("PSTU");
             university.setCity("Perm");
@@ -43,10 +42,19 @@ class ProfessorRepositoryTest {
             department.setName("ITAS");
             department.setUniversity(university);
             departmentRepository.add(department);
-            connection.setAutoCommit(false);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @AfterEach
+    void cleanUp() throws SQLException {
+        Connection connection;
+        Statement statement;
+
+        connection = DriverManager.getConnection(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
+        statement = connection.createStatement();
+        statement.execute("DELETE FROM universities");
     }
 
     @Test

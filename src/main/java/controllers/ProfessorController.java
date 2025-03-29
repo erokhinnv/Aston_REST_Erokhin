@@ -14,14 +14,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import repositories.DepartmentRepository;
 import repositories.ProfessorRepository;
 import services.ProfessorService;
-import utils.ConnectionUtils;
 import utils.MimeTypes;
 import utils.ParseUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -298,15 +296,13 @@ public class ProfessorController extends HttpServlet {
 
     @SuppressWarnings("java:S112") // Все необрабатываемые ошибки считаем Server Internal Error (500)
     ProfessorService createProfessorService() {
-        Connection connection;
         ProfessorRepository repository;
         DepartmentRepository departmentRepository;
         ProfessorService service;
 
         try {
-            connection = ConnectionUtils.openConnection();
-            repository = new ProfessorRepository(connection);
-            departmentRepository = new DepartmentRepository(connection);
+            repository = new ProfessorRepository();
+            departmentRepository = new DepartmentRepository();
             service = new ProfessorService(repository, departmentRepository);
         } catch (Exception e) {
             throw new RuntimeException(e);

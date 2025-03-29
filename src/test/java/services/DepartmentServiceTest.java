@@ -2,7 +2,6 @@ package services;
 
 import entities.Department;
 import entities.DepartmentFull;
-import entities.University;
 import entities.UniversityFull;
 import exceptions.ValidationException;
 import org.junit.jupiter.api.Assertions;

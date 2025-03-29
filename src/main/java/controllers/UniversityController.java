@@ -12,14 +12,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import repositories.UniversityRepository;
 import services.UniversityService;
-import utils.ConnectionUtils;
 import utils.MimeTypes;
 import utils.ParseUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -206,13 +204,11 @@ public class UniversityController extends HttpServlet {
 
     @SuppressWarnings("java:S112") // Все необрабатываемые ошибки считаем Server Internal Error (500)
     UniversityService createUniversityService() {
-        Connection connection;
         UniversityRepository repository;
         UniversityService service;
 
         try {
-            connection = ConnectionUtils.openConnection();
-            repository = new UniversityRepository(connection);
+            repository = new UniversityRepository();
             service = new UniversityService(repository);
         } catch (Exception e) {
             throw new RuntimeException(e);

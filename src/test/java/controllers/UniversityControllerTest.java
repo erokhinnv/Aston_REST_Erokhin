@@ -1,7 +1,6 @@
 package controllers;
 
 import entities.Department;
-import entities.DepartmentFull;
 import entities.University;
 import entities.UniversityFull;
 import exceptions.ValidationException;

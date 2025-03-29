@@ -14,14 +14,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import repositories.DepartmentRepository;
 import repositories.UniversityRepository;
 import services.DepartmentService;
-import utils.ConnectionUtils;
 import utils.MimeTypes;
 import utils.ParseUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -183,15 +181,13 @@ public class DepartmentController extends HttpServlet {
 
     @SuppressWarnings("java:S112") // Все необрабатываемые исключения являются Server Internal Error (500)
     DepartmentService createDepartmentService() {
-        Connection connection;
         DepartmentRepository repository;
         UniversityRepository universityRepository;
         DepartmentService service;
 
         try {
-            connection = ConnectionUtils.openConnection();
-            repository = new DepartmentRepository(connection);
-            universityRepository = new UniversityRepository(connection);
+            repository = new DepartmentRepository();
+            universityRepository = new UniversityRepository();
             service = new DepartmentService(repository, universityRepository);
         } catch (Exception e) {
             throw new RuntimeException(e);

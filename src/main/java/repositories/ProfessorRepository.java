@@ -9,15 +9,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
-public class ProfessorRepository {
-    public ProfessorRepository(Connection connection) throws SQLException {
-        this.connection = connection;
+public class ProfessorRepository extends Repository {
+    public ProfessorRepository() throws SQLException {
+        Connection connection;
+
+        connection = openConnection();
         RepositoryUtils.createTablesIfNotExist(connection);
     }
 
     public void add(Professor professor) throws SQLException {
+        Connection connection;
         ResultSet resultSet;
 
+        connection = openConnection();
         try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO professors (department_id, name, phone_number, degree, birthday)" +
                 "VALUES (?, ?, ?, ?, ?) returning id")) {
             preparedStatement.setInt(1, professor.getDepartment().getId());
@@ -28,25 +32,33 @@ public class ProfessorRepository {
             resultSet = preparedStatement.executeQuery();
             resultSet.next();
             professor.setId(resultSet.getInt(1));
+        } finally {
+            connection.close();
         }
     }
 
     public boolean delete(int id) throws SQLException {
+        Connection connection;
         ResultSet resultSet;
         boolean deleted;
 
+        connection = openConnection();
         try (PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM professors WHERE id = ? returning id")) {
             preparedStatement.setInt(1, id);
             resultSet = preparedStatement.executeQuery();
             deleted = resultSet.next();
+        } finally {
+            connection.close();
         }
         return deleted;
     }
 
     public boolean update(Professor professor) throws SQLException {
+        Connection connection;
         ResultSet resultSet;
         boolean updated;
 
+        connection = openConnection();
         try (PreparedStatement preparedStatement = connection.prepareStatement("UPDATE professors SET department_id = ?, name = ?, phone_number = ?, degree = ?, birthday = ? " +
                 "WHERE id =? returning id")) {
             preparedStatement.setInt(1, professor.getDepartment().getId());
@@ -57,14 +69,18 @@ public class ProfessorRepository {
             preparedStatement.setInt(6, professor.getId());
             resultSet = preparedStatement.executeQuery();
             updated = resultSet.next();
+        } finally {
+            connection.close();
         }
         return updated;
     }
 
     public Professor getById(int id) throws SQLException {
+        Connection connection;
         ResultSet resultSet;
         Professor professor;
 
+        connection = openConnection();
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT p.name, p.phone_number," +
                 " p.degree, p.birthday, d.id, d.name, u.id, u.name, u.city" +
                 " FROM professors p INNER JOIN departments d ON p.department_id = d.id" +
@@ -96,15 +112,18 @@ public class ProfessorRepository {
                 professor = null;
             }
         }
+        connection.close();
         return professor;
     }
 
     public Collection<Professor> get() throws SQLException {
+        Connection connection;
         ResultSet resultSet;
         ArrayList<Professor> professors;
         HashMap<Integer, Department> departments;
         HashMap<Integer, University> universities;
 
+        connection = openConnection();
         universities = new HashMap<>();
         departments = new HashMap<>();
         professors = new ArrayList<>();
@@ -148,10 +167,9 @@ public class ProfessorRepository {
                 professors.add(professor);
 
             }
+        } finally {
+            connection.close();
         }
         return professors;
     }
-
-    private final Connection connection;
-
 }

@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import repositories.DepartmentRepository;
 import repositories.ProfessorRepository;
-import repositories.UniversityRepository;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
